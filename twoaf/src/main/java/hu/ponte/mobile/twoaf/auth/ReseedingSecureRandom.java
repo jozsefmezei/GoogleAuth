@@ -35,6 +35,8 @@ import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import hu.ponte.mobile.twoaf.exception.GoogleAuthenticatorException;
+
 public class ReseedingSecureRandom {
 	private static final int MAX_OPERATIONS = 1_000_000;
 	private final String provider;

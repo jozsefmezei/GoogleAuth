@@ -39,6 +39,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import hu.ponte.mobile.twoaf.exception.GoogleAuthenticatorException;
 import hu.ponte.mobile.twoaf.utils.BaseUtils;
 
 /**

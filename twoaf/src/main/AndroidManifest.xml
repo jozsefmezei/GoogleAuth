@@ -1,2 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="hu.ponte.mobile.twoaf" />
+    package="hu.ponte.mobile.twoaf">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+</manifest>

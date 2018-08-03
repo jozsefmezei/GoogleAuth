@@ -30,7 +30,11 @@
 
 package hu.ponte.mobile.twoaf.auth;
 
+import android.content.Context;
+
 import java.util.concurrent.TimeUnit;
+
+import hu.ponte.mobile.twoaf.handlers.StorageHandler;
 
 public class GoogleAuthenticatorConfig {
     private long timeStepSizeInMillis = TimeUnit.SECONDS.toMillis(30);
@@ -42,6 +46,7 @@ public class GoogleAuthenticatorConfig {
 
     private KeyRepresentation keyRepresentation = KeyRepresentation.BASE32;
     private HmacHashFunction hmacHashFunction = HmacHashFunction.HmacSHA1;
+    private StorageHandler storageHandler = new StorageHandler();
 
     /**
      * Returns the key module.
@@ -122,10 +127,12 @@ public class GoogleAuthenticatorConfig {
 
     /**
      * Returns the offset between server and client if it is specified
+     *
      * @return long
      */
 
-    public long getTimeOffstet() {
+    public long getTimeOffstet(Context context) {
+        if (timeOffstet == -1) timeOffstet = storageHandler.getCorrectionTime(context);
         return timeOffstet;
     }
 

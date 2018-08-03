@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package hu.ponte.mobile.twoaf.auth;
+package hu.ponte.mobile.twoaf.exception;
 
 /**
  * Date: 12/02/14
