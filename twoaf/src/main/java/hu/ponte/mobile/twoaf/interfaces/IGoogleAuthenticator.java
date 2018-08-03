@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package hu.ponte.mobile.twoaf.auth;
+package hu.ponte.mobile.twoaf.interfaces;
+
+import android.content.Context;
 
 /**
  * Google Authenticator library interface.
@@ -38,17 +40,17 @@ public interface IGoogleAuthenticator {
 	/**
 	 * This method generates the current TOTP password.
 	 * @param secret the encoded secret key.
-	 * @return the current TOTP password.
+	 * @param twoaf TOTP password at the specified time.
 	 * @since 1.1.0
 	 */
-	int getTotpPassword(String secret);
+	void getTotpPassword(Context context, Twoaf twoaf, String secret);
 
 	/**
 	 * This method generates the TOTP password at the specified time.
 	 * @param secret The encoded secret key.
 	 * @param time   The time to use to calculate the password.
-	 * @return the TOTP password at the specified time.
+	 * @param twoaf TOTP password at the specified time.
 	 * @since 1.1.0
 	 */
-	int getTotpPassword(String secret, long time);
+	void getTotpPassword(Twoaf twoaf, String secret, long time);
 }

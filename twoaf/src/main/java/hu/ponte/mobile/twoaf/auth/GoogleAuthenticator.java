@@ -30,16 +30,23 @@
 
 package hu.ponte.mobile.twoaf.auth;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
+import android.content.Context;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Date;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 import hu.ponte.mobile.twoaf.exception.GoogleAuthenticatorException;
+import hu.ponte.mobile.twoaf.interfaces.IGoogleAuthenticator;
+import hu.ponte.mobile.twoaf.interfaces.Twoaf;
 import hu.ponte.mobile.twoaf.utils.BaseUtils;
 
 /**
@@ -157,6 +164,8 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
 
     private boolean credentialRepositorySearched;
 
+    private Timer tokenTimer;
+
     public GoogleAuthenticator() {
         config = new GoogleAuthenticatorConfig();
     }
@@ -175,12 +184,48 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
         }
     }
 
-    public int getTotpPassword(String secret) {
-        return getTotpPassword(secret, new Date().getTime() - config.getTimeOffstet());
+    public void getTotpPassword(Context context, Twoaf twoaf, String secret) {
+        getTotpPassword(twoaf, secret, new Date().getTime() - config.getTimeOffstet(context));
     }
 
-    public int getTotpPassword(String secret, long time) {
-        return calculateCode(decodeSecret(secret), getTimeWindowFromTime(time));
+    public void getTotpPassword(Twoaf twoaf, String secret, long time) {
+        long timeWindow = getTimeWindowFromTime(time);
+        int token = calculateCode(decodeSecret(secret), timeWindow);
+        long remainingTime = calculateRemainingTime(time, timeWindow);
+
+        twoaf.onTokenChangedListener(String.valueOf(token), remainingTime);
+    }
+
+    public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret) {
+        startTotpPasswordGeneration(context, twoaf, secret, new Date().getTime() - config.getTimeOffstet(context));
+    }
+
+    public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret, long time){
+        long timeWindow = getTimeWindowFromTime(time);
+        long remainingTime = calculateRemainingTime(time, timeWindow);
+        getTotpPassword(twoaf, secret, time);
+        tokenTimer = new Timer();
+        tokenTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                stopTotpPasswordGeneration();
+                startTotpPasswordGeneration(context, twoaf, secret);
+            }
+        }, remainingTime, remainingTime);
+    }
+
+    public void stopTotpPasswordGeneration(){
+        tokenTimer.cancel();
+        tokenTimer.purge();
+        tokenTimer = null;
+    }
+
+    /**
+     * Calculate the remaining time of token validity in millis
+     */
+
+    private long calculateRemainingTime(long time, long timeWindow) {
+        return config.getTimeStepSizeInMillis() - (time - (timeWindow * config.getTimeStepSizeInMillis()));
     }
 
     private long getTimeWindowFromTime(long time) {

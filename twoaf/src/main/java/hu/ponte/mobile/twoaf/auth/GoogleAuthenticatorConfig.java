@@ -42,7 +42,7 @@ public class GoogleAuthenticatorConfig {
     private int codeDigits = 6;
     private int numberOfScratchCodes = 5;
     private int keyModulus = (int) Math.pow(10, codeDigits);
-    private long timeOffstet;
+    private long timeOffstet = -1;
 
     private KeyRepresentation keyRepresentation = KeyRepresentation.BASE32;
     private HmacHashFunction hmacHashFunction = HmacHashFunction.HmacSHA1;
