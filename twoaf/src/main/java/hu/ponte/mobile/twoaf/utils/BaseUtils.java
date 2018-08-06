@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 
 public class BaseUtils {
 
+    public enum BaseType {BASE_32, BASE_64}
+
     private Base32 codec32 = new Base32();
     private Base64 codec64 = new Base64();
 

@@ -9,6 +9,7 @@ import hu.ponte.mobile.twoaf.auth.GoogleAuthenticatorConfig
 import hu.ponte.mobile.twoaf.auth.HmacHashFunction
 import hu.ponte.mobile.twoaf.auth.ReseedingSecureRandom
 import hu.ponte.mobile.twoaf.handlers.TimeCorrectionHandler
+import hu.ponte.mobile.twoaf.interfaces.Twoaf
 import hu.ponte.mobile.twoaf.utils.BaseUtils
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -48,16 +49,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getRepeatedlyGoogleAuthPassword(value: String) {
-        val baseText = decodeUtil.encodeToString32(value)
-        authenticator?.startTotpPasswordGeneration(this, { token: String, time: Long ->
-            text.text = "$token, time: ${time}"
-        }, baseText)
+        authenticator?.startTotpPasswordGeneration(this, twoaf, value)
     }
 
     fun getSingleGoogleAuthPassword(value: String) {
-        val baseText = decodeUtil.encodeToString32(value)
-        authenticator?.getTotpPassword(this, { token: String, time: Long ->
-            text.text = "$token, time: ${time}"
-        }, baseText)
+        authenticator?.getTotpPassword(this, twoaf, value)
+    }
+
+    private val twoaf = object : Twoaf {
+        override fun onTokenChangedListener(token: String?, remainingTimeInSeconds: Long) {
+        }
+
+        override fun onTokenChangedUIListener(token: String?, remainingTimeInSeconds: Long) {
+            text.text = "$token, time: ${remainingTimeInSeconds}"
+        }
+
     }
 }

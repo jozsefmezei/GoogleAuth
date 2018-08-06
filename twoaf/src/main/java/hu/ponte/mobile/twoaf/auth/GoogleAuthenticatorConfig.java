@@ -35,6 +35,7 @@ import android.content.Context;
 import java.util.concurrent.TimeUnit;
 
 import hu.ponte.mobile.twoaf.handlers.StorageHandler;
+import hu.ponte.mobile.twoaf.utils.BaseUtils;
 
 public class GoogleAuthenticatorConfig {
     private long timeStepSizeInMillis = TimeUnit.SECONDS.toMillis(30);
@@ -43,6 +44,7 @@ public class GoogleAuthenticatorConfig {
     private int numberOfScratchCodes = 5;
     private int keyModulus = (int) Math.pow(10, codeDigits);
     private long timeOffstet = -1;
+    private BaseUtils.BaseType encodeType;
 
     private KeyRepresentation keyRepresentation = KeyRepresentation.BASE32;
     private HmacHashFunction hmacHashFunction = HmacHashFunction.HmacSHA1;
@@ -136,6 +138,10 @@ public class GoogleAuthenticatorConfig {
         return timeOffstet;
     }
 
+    public BaseUtils.BaseType getEncodeType() {
+        return encodeType;
+    }
+
     public static class GoogleAuthenticatorConfigBuilder {
         private GoogleAuthenticatorConfig config = new GoogleAuthenticatorConfig();
 
@@ -212,6 +218,11 @@ public class GoogleAuthenticatorConfig {
 
         public GoogleAuthenticatorConfigBuilder setTimeOffset(long offset) {
             config.timeOffstet = offset;
+            return this;
+        }
+
+        public GoogleAuthenticatorConfigBuilder setEncodeType(BaseUtils.BaseType encode){
+            config.encodeType = encode;
             return this;
         }
     }

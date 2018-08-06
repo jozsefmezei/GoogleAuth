@@ -31,10 +31,13 @@
 package hu.ponte.mobile.twoaf.auth;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -45,6 +48,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import hu.ponte.mobile.twoaf.exception.GoogleAuthenticatorException;
+import hu.ponte.mobile.twoaf.exception.TwoafException;
 import hu.ponte.mobile.twoaf.interfaces.IGoogleAuthenticator;
 import hu.ponte.mobile.twoaf.interfaces.Twoaf;
 import hu.ponte.mobile.twoaf.utils.BaseUtils;
@@ -165,6 +169,7 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
     private boolean credentialRepositorySearched;
 
     private Timer tokenTimer;
+    private Handler handler = new Handler(Looper.myLooper());
 
     public GoogleAuthenticator() {
         config = new GoogleAuthenticatorConfig();
@@ -189,18 +194,25 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
     }
 
     public void getTotpPassword(Twoaf twoaf, String secret, long time) {
+        if (secret == null || secret.isEmpty()) throw new TwoafException(null, TwoafException.TwoafReason.EMPTY_SECRET);
+        String encodedSecret = encodeSecret(secret);
         long timeWindow = getTimeWindowFromTime(time);
-        int token = calculateCode(decodeSecret(secret), timeWindow);
+        int token = calculateCode(decodeSecret(encodedSecret), timeWindow);
         long remainingTime = calculateRemainingTime(time, timeWindow);
 
-        twoaf.onTokenChangedListener(String.valueOf(token), remainingTime);
+        String tokenString = String.format(Locale.getDefault(), "%06d", token);
+        twoaf.onTokenChangedListener(tokenString, remainingTime);
+        handler.post(() -> {
+            twoaf.onTokenChangedUIListener(tokenString, remainingTime);
+        });
     }
 
-    public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret) {
+        public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret) {
+        stopTotpPasswordGeneration();
         startTotpPasswordGeneration(context, twoaf, secret, new Date().getTime() - config.getTimeOffstet(context));
     }
 
-    public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret, long time){
+    public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret, long time) {
         long timeWindow = getTimeWindowFromTime(time);
         long remainingTime = calculateRemainingTime(time, timeWindow);
         getTotpPassword(twoaf, secret, time);
@@ -214,10 +226,12 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
         }, remainingTime, remainingTime);
     }
 
-    public void stopTotpPasswordGeneration(){
-        tokenTimer.cancel();
-        tokenTimer.purge();
-        tokenTimer = null;
+    public void stopTotpPasswordGeneration() {
+        if(tokenTimer != null) {
+            tokenTimer.cancel();
+            tokenTimer.purge();
+            tokenTimer = null;
+        }
     }
 
     /**
@@ -244,6 +258,12 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
             default:
                 throw new IllegalArgumentException("Unknown key representation type.");
         }
+    }
+
+    private String encodeSecret(String secret){
+        if (config.getEncodeType() == null || BaseUtils.BaseType.BASE_32 == config.getEncodeType())
+            return new BaseUtils().encodeToString32(secret);
+        return new BaseUtils().encodeToString64(secret);
     }
 
     /**
