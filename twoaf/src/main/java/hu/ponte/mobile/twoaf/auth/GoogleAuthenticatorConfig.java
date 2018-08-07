@@ -43,7 +43,6 @@ public class GoogleAuthenticatorConfig {
     private int codeDigits = 6;
     private int numberOfScratchCodes = 5;
     private int keyModulus = (int) Math.pow(10, codeDigits);
-    private long timeOffstet = -1;
     private BaseUtils.BaseType encodeType;
 
     private KeyRepresentation keyRepresentation = KeyRepresentation.BASE32;
@@ -134,8 +133,7 @@ public class GoogleAuthenticatorConfig {
      */
 
     public long getTimeOffstet(Context context) {
-        if (timeOffstet == -1) timeOffstet = storageHandler.getCorrectionTime(context);
-        return timeOffstet;
+        return storageHandler.getCorrectionTime(context);
     }
 
     public BaseUtils.BaseType getEncodeType() {
@@ -213,11 +211,6 @@ public class GoogleAuthenticatorConfig {
             }
 
             config.hmacHashFunction = hmacHashFunction;
-            return this;
-        }
-
-        public GoogleAuthenticatorConfigBuilder setTimeOffset(long offset) {
-            config.timeOffstet = offset;
             return this;
         }
 
