@@ -31,6 +31,7 @@
 package hu.ponte.mobile.twoaf.auth;
 
 import android.content.Context;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -39,7 +40,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -169,6 +169,7 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
     private boolean credentialRepositorySearched;
 
     private Timer tokenTimer;
+    private CountDownTimer timer;
     private Handler handler = new Handler(Looper.myLooper());
 
     public GoogleAuthenticator() {
@@ -194,7 +195,8 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
     }
 
     public void getTotpPassword(Twoaf twoaf, String secret, long time) {
-        if (secret == null || secret.isEmpty()) throw new TwoafException(null, TwoafException.TwoafReason.EMPTY_SECRET);
+        if (secret == null || secret.isEmpty())
+            throw new TwoafException(null, TwoafException.TwoafReason.EMPTY_SECRET);
         String encodedSecret = encodeSecret(secret);
         long timeWindow = getTimeWindowFromTime(time);
         int token = calculateCode(decodeSecret(encodedSecret), timeWindow);
@@ -207,7 +209,7 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
         });
     }
 
-        public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret) {
+    public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret) {
         stopTotpPasswordGeneration();
         startTotpPasswordGeneration(context, twoaf, secret, getCorrectedTime(context));
     }
@@ -215,22 +217,24 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
     public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret, long time) {
         long timeWindow = getTimeWindowFromTime(time);
         long remainingTime = calculateRemainingTime(time, timeWindow);
+        long endTime = CalculateUtils.getMaximizedValue(remainingTime, 0);
         getTotpPassword(twoaf, secret, time);
-        tokenTimer = new Timer();
-        tokenTimer.schedule(new TimerTask() {
+        timer = new CountDownTimer(endTime, 1000) {
             @Override
-            public void run() {
+            public void onTick(long l) { }
+
+            @Override
+            public void onFinish() {
                 stopTotpPasswordGeneration();
                 startTotpPasswordGeneration(context, twoaf, secret);
             }
-        }, remainingTime, remainingTime);
+        }.start();
     }
 
     public void stopTotpPasswordGeneration() {
-        if(tokenTimer != null) {
-            tokenTimer.cancel();
-            tokenTimer.purge();
-            tokenTimer = null;
+        if (timer != null){
+            timer.cancel();
+            timer = null;
         }
     }
 
@@ -246,7 +250,7 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
         return CalculateUtils.getTimeWindow(time, this.config.getTimeStepSizeInMillis());
     }
 
-    private long getCorrectedTime(Context context){
+    private long getCorrectedTime(Context context) {
         return CalculateUtils.getCorrectedTime(config.getTimeOffstet(context));
     }
 
@@ -264,7 +268,7 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
         }
     }
 
-    private String encodeSecret(String secret){
+    private String encodeSecret(String secret) {
         if (config.getEncodeType() == null || BaseUtils.BaseType.BASE_32 == config.getEncodeType())
             return new BaseUtils().encodeToString32(secret);
         return new BaseUtils().encodeToString64(secret);

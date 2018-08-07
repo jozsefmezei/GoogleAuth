@@ -15,4 +15,9 @@ public class CalculateUtils {
     public static long getTimeWindow(long time, long timeStepSize){
         return time / timeStepSize;
     }
+
+    public static long getMaximizedValue(long value, long minValue){
+        if (value <= minValue) return minValue;
+        return value;
+    }
 }
