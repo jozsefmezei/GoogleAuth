@@ -26,5 +26,4 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'commons-codec:commons-codec:1.11'
-    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 }

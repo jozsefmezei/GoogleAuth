@@ -29,4 +29,8 @@ public class TimeCorrectionHandler {
         long offset = storageHandler.getCorrectionTime(context);
         return CalculateUtils.getCorrectedTime(offset);
     }
+
+    public void setUrl(String url){
+        connection.setUrl(url);
+    }
 }

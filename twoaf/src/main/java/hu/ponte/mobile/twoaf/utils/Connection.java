@@ -1,15 +1,10 @@
 package hu.ponte.mobile.twoaf.utils;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class Connection {
-    private OkHttpClient client = new OkHttpClient();
     private String url = "http://www.google.com";
 
     public void getNetworkTime(NetworkTimeListener networkTimeListener) {
@@ -19,12 +14,16 @@ public class Connection {
 
     private void getTimeFromResponse(NetworkTimeListener networkTimeListener) {
         try {
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
+            HttpURLConnection.setFollowRedirects(false);
+            URL host = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) host.openConnection();
+            connection.setRequestMethod("HEAD");
+            connection.setConnectTimeout(2000);
+            connection.setReadTimeout(2000);
+            connection.setInstanceFollowRedirects(false);
+            connection.connect();
 
-            Response response = client.newCall(request).execute();
-            networkTimeListener.onDateTimeChanged(response.header("Date"));
+            networkTimeListener.onDateTimeChanged(connection.getHeaderField("Date"));
         } catch (IOException e) {
             e.printStackTrace();
         }
