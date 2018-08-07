@@ -3,6 +3,7 @@ package hu.ponte.mobile.authentication
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.widget.Toast
 import hu.ponte.mobile.twoaf.auth.GoogleAuthenticator
 import hu.ponte.mobile.twoaf.auth.GoogleAuthenticatorConfig
@@ -12,6 +13,7 @@ import hu.ponte.mobile.twoaf.handlers.TimeCorrectionHandler
 import hu.ponte.mobile.twoaf.interfaces.Twoaf
 import hu.ponte.mobile.twoaf.utils.BaseUtils
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +35,10 @@ class MainActivity : AppCompatActivity() {
         syncBtn.setOnClickListener {
             timecorrection.syncTime(this) {
                 handler.post { Toast.makeText(this, "Time synchronized", Toast.LENGTH_SHORT).show() }
+                val time = timecorrection.getCorrectedTime(MainActivity@this)
+                val cal = Calendar.getInstance()
+                cal.timeInMillis = time
+                Log.d("twoaf", cal.time.toString())
             }
         }
     }
@@ -63,6 +69,5 @@ class MainActivity : AppCompatActivity() {
         override fun onTokenChangedUIListener(token: String?, remainingTimeInSeconds: Long) {
             text.text = "$token, time: ${remainingTimeInSeconds}"
         }
-
     }
 }

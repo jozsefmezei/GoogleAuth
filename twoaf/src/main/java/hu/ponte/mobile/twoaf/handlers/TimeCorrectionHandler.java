@@ -3,6 +3,7 @@ package hu.ponte.mobile.twoaf.handlers;
 import android.content.Context;
 
 import hu.ponte.mobile.twoaf.interfaces.TimeSync;
+import hu.ponte.mobile.twoaf.utils.CalculateUtils;
 import hu.ponte.mobile.twoaf.utils.Connection;
 import hu.ponte.mobile.twoaf.utils.DateFormatter;
 
@@ -22,5 +23,10 @@ public class TimeCorrectionHandler {
         long systemTime = System.currentTimeMillis();
         storageHandler.storeCorrectionTime(context, trustedDateInMillis - systemTime);
         timeSync.onTimeSyncronisedListener();
+    }
+
+    public long getCorrectedTime(Context context){
+        long offset = storageHandler.getCorrectionTime(context);
+        return CalculateUtils.getCorrectedTime(offset);
     }
 }

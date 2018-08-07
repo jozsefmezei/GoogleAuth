@@ -36,7 +36,6 @@ import android.os.Looper;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Timer;
@@ -52,6 +51,7 @@ import hu.ponte.mobile.twoaf.exception.TwoafException;
 import hu.ponte.mobile.twoaf.interfaces.IGoogleAuthenticator;
 import hu.ponte.mobile.twoaf.interfaces.Twoaf;
 import hu.ponte.mobile.twoaf.utils.BaseUtils;
+import hu.ponte.mobile.twoaf.utils.CalculateUtils;
 
 /**
  * This class implements the functionality described in RFC 6238 (TOTP: Time
@@ -190,7 +190,7 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
     }
 
     public void getTotpPassword(Context context, Twoaf twoaf, String secret) {
-        getTotpPassword(twoaf, secret, new Date().getTime() - config.getTimeOffstet(context));
+        getTotpPassword(twoaf, secret, getCorrectedTime(context));
     }
 
     public void getTotpPassword(Twoaf twoaf, String secret, long time) {
@@ -209,7 +209,7 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
 
         public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret) {
         stopTotpPasswordGeneration();
-        startTotpPasswordGeneration(context, twoaf, secret, new Date().getTime() - config.getTimeOffstet(context));
+        startTotpPasswordGeneration(context, twoaf, secret, getCorrectedTime(context));
     }
 
     public void startTotpPasswordGeneration(Context context, Twoaf twoaf, String secret, long time) {
@@ -239,11 +239,15 @@ public final class GoogleAuthenticator implements IGoogleAuthenticator {
      */
 
     private long calculateRemainingTime(long time, long timeWindow) {
-        return config.getTimeStepSizeInMillis() - (time - (timeWindow * config.getTimeStepSizeInMillis()));
+        return CalculateUtils.getRemainingTime(time, timeWindow, config.getTimeStepSizeInMillis());
     }
 
     private long getTimeWindowFromTime(long time) {
-        return time / this.config.getTimeStepSizeInMillis();
+        return CalculateUtils.getTimeWindow(time, this.config.getTimeStepSizeInMillis());
+    }
+
+    private long getCorrectedTime(Context context){
+        return CalculateUtils.getCorrectedTime(config.getTimeOffstet(context));
     }
 
     private byte[] decodeSecret(String secret) {
