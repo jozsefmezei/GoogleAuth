@@ -1,1 +1,1 @@
-include ':app', ':twoaf'
+include ':example', ':twoaf'
