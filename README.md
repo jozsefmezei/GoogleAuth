@@ -1,22 +1,22 @@
-#About
+# About
 Based on https://github.com/wstrange/GoogleAuth. This library written for Android Clients in Java 8. 
 
-#Demo
+# Demo
 ![Main screen](/demo/device-screen.png)
 
 
-#What is
+# What is
  - TOTP password: The Time-based One-Time Password algorithm (TOTP) is an algorithm that computes a one-time password from a shared secret key and the current time.
  - Secret key: unique string, which known by the device and server as well
 
-#Features:
+# Features:
  - token generating time by time
  - time synchronisation default implementation 
  - time correction in run time (after sync)
  - offline working
  - 6 or 8 digits support
  
- #Dependency
+ # Dependency
  
  Add the JitPack repository into your project level gradle:
  ```groovy
@@ -35,7 +35,7 @@ dependencies {
 	}
 ```
 
-#How to use
+# How to use
 ```kotlin
 // Init ------------------
 val config = GoogleAuthenticatorConfig.GoogleAuthenticatorConfigBuilder()
@@ -64,7 +64,7 @@ authenticator.startTotpPasswordGeneration(this, twoaf, value)
 ```
 For more sample please check the example application.
 
-#Licence
+# Licence
 ```
 Copyright 2018 József Mezei
 
