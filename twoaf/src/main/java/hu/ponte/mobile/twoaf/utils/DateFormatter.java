@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import hu.ponte.mobile.twoaf.exception.TwoafException;
 
@@ -22,31 +23,47 @@ public class DateFormatter {
      * <code>asctime()</code> format.
      */
     public static final String PATTERN_ASCTIME = "EEE MMM d HH:mm:ss yyyy";
-    private static final String[] DEFAULT_PATTERNS = new String[]{
-            PATTERN_RFC1036,
-            PATTERN_RFC1123,
-            PATTERN_ASCTIME
+    private static final SimpleDateFormat[] DEFAULT_PATTERNS = new SimpleDateFormat[]{
+            new SimpleDateFormat(PATTERN_RFC1036, Locale.US),
+            new SimpleDateFormat(PATTERN_RFC1123, Locale.US),
+            new SimpleDateFormat(PATTERN_ASCTIME, Locale.US)
     };
+
+    static {
+        for (SimpleDateFormat dateFormatter : DEFAULT_PATTERNS) {
+            dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+        }
+    }
 
     public static long getDateInMillis(String dateTime) {
         return getDateInMillis(DEFAULT_PATTERNS, dateTime);
     }
 
-    public static long getDateInMillis(String[] dateFormats, String dateTime) {
-        for (String dateFormat : dateFormats) {
+    public static long getDateInMillis(SimpleDateFormat[] dateFormats, String dateTime) {
+        if (dateTime == null || dateTime.isEmpty())
+            throw new TwoafException(null, TwoafException.TwoafReason.EMPTY_DATE_FIELD);
+        dateTime = trimDate(dateTime);
+
+        for (SimpleDateFormat dateFormat : dateFormats) {
             long date = getDateInMillis(dateFormat, dateTime);
             if (date != -1) return date;
         }
         throw new TwoafException(null, TwoafException.TwoafReason.NO_DATE_FORMAT);
     }
 
-    public static long getDateInMillis(String dateFormat, String dateTime) {
+    public static long getDateInMillis(SimpleDateFormat dateFormat, String dateTime) {
         try {
-            SimpleDateFormat formatter = new SimpleDateFormat(dateFormat, Locale.getDefault());
-            Date date = formatter.parse(dateTime);
+            Date date = dateFormat.parse(dateTime);
             return date.getTime();
         } catch (ParseException e) {// Ignore exception}
             return -1;
         }
+    }
+
+    private static String trimDate(String dateValue) {
+        // trim single quotes around date if present -- see apache issue #5279
+        if (dateValue.length() > 1 && dateValue.startsWith("'") && dateValue.endsWith("'"))
+            dateValue = dateValue.substring(1, dateValue.length() - 1);
+        return dateValue;
     }
 }
