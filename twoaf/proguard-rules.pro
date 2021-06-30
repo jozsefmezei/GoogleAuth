@@ -19,3 +19,13 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Dependencies
+# ============
+
+# Guava
+-keep class com.google.common.io.BaseEncoding {*;}
+
+# Auth classes
+# =================
+-keep class hu.ponte.mobile.twoaf.** {*;}
